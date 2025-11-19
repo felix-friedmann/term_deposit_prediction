@@ -16,7 +16,7 @@ Die verwendeten Daten stammen aus einem Marketing-Datensatz einer portugiesische
 Das Feature `balance` hat eine sehr breite Streuung und ist stark rechtsschief, hat jedoch vermutlich eine eher geringe Trennkraft. Das Feature
 `duration` dagegen weist eine bessere Trennkraft auf, allerdings ist die Dauer eines Anrufs erst nach dem Anruf bekannt, wenn auch schon das Ergebnis bekannt ist.
 Um das Modell realistisch zu halten wird das Feature vor dem Modelltraining entfernt. Dem bereinigten Feature `pdays` nach nehmen Kunden, deren letzter Marketingkontakt
-kürzer her sind, das Angebot öfter an. Allerdings bietet sich für das Feature (meines Wissenstands nach) keine sinnvolle Bereinigung wodurch es möglich wäre das Feature mit in das
+kürzer her sind, das Angebot öfter an. Allerdings bietet sich für das Feature (meines Wissenstands nach) keine sinnvolle Bereinigung durch die es möglich wäre das Feature mit in das
 Training aufzunehmen, weshalb auch dieses Feature entfernt wird.
 
 <div style="display: flex; justify-content: center; align-items: center; gap: 20px">
@@ -53,9 +53,16 @@ Zusätzlich wird zur allgemeinen Bewertung des Modells die Accuracy herangezogen
 
 ### Performance
 
-Die Performance des Modells kann eher als mittelmäßig beschrieben werden. Der Precision Score liegt bei 66,31% was bedeutet, dass der Anteil der Kunden für den vorhergesagt wird, dass er das Angebot annimmt,
+Die Performance des Modells kann eher als mittelmäßig bis schlecht beschrieben werden. Der Precision Score liegt bei 66,31% was bedeutet, dass der Anteil der Kunden für den vorhergesagt wird, dass er das Angebot annimmt,
 in nur knapp 66% der Fälle auch wirklich das Angebot annimmt. Die Accuracy dagegen liegt bei etwa 89%. Grund dafür ist die unausgeglichene Verteilung der Antworten, die `yes` Kategorie, bildet nur 11,69% der Fälle.
 Eine Möglichkeit das Modell zu verbessern wäre Hyperparameter-Tuning, und im Idealfall ein höherer Anteil an erfolgreichen Akquisitionen im Datensatz.
+Anhand der Tabelle ist auch erkennbar, dass viele eigentlich positiven Ergebnisse als negativ vorhergesagt werden. Das Modell sollte also zusätzlich so optimiert werden, dass die False Negatives sinken,
+ohne dass dadurch die Anzahl an False Positives leidet.
+
+|                     | positives Ergebnis | negatives Ergebnis |  
+|---------------------|:------------------:|:------------------:|
+| positive Vorhersage |        187         |         95         |
+| negative Vorhersage |        871         |        7890        |
 
 Zusammenfassend kann man sagen, dass das Modell in der derzeitigen Form zur Unterstützung von Entscheidungen verwendet werden kann, aber nicht immer optimalen Ergebnisse liefert. Zuvor wäre noch Hyperparameter-Tuning sinnvoll, 
 und auch eine laufende Erweiterung des Datensatzes ist empfehlenswert.
@@ -64,6 +71,12 @@ und auch eine laufende Erweiterung des Datensatzes ist empfehlenswert.
 
 ### Weiterführend
 
-_TODO_
+Weitere Features die zur Prognose sinnvoll sein könnten wäre etwa die Häufigkeit von Ein- und Auszahlungen. Ein Kunde dessen Kontostand volatil ist, wird vermutlich eher seltener ein Festgeldangebot annehmen.
+Für einen Kunden, der das Konto de facto bereits als Festgeldkonto nutzt, ist das Angebot dagegen attraktiver. Zusätzliche Variablen, die eine Rolle spielen, könnten wären etwa die aktuelle Wirtschaftslage oder auch
+der Konkurrenzmarkt. Ist die aktuelle Kombination aus angebotenem Zins und Inflation attraktiv, werden vermutlich mehr Kunden ein Festgeldangebot annehmen, bietet eine andere Bank einen attraktiveren Zinssatz, sinkt die Attraktivität
+von Festgeldkonten der eigenen Bank.
+
+Unter Umständen kann das Modell auch für andere Bankprodukte verwendet werden. Dafür müsste die Zielvariable angepasst werden, und das Modell erneut trainiert werden, da Features in anderen Bereichen nicht unbedingt die gleiche Relevanz haben
+wie bei Festgeldakquisitionen. Voraussetzung dafür ist natürlich, dass die neue Zielvariable entweder für die gleichen Kunden erhoben wird, oder alle Features für neue Kunden erhoben werden. Die jetzige Zielvariable könnte dabei zu einem neuen Feature werden.
 
 [^1]: Moro, S., Rita, P., & Cortez, P. (2014). Bank Marketing [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C5K306.

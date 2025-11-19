@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt
-from sklearn.metrics import precision_score, recall_score, accuracy_score
+from sklearn.metrics import precision_score, recall_score, confusion_matrix, accuracy_score
 
 def evaluate_model(true_values, predicted_values):
     """
@@ -10,4 +10,5 @@ def evaluate_model(true_values, predicted_values):
 
     print(f"\nPrecision score: {precision_score(true_values, predicted_values)}")
     print(f"Recall score: {recall_score(true_values, predicted_values)}")
+    print(f"Confusion matrix: {confusion_matrix(true_values, predicted_values)}")
     print(f"Accuracy: {accuracy_score(true_values, predicted_values)}")
