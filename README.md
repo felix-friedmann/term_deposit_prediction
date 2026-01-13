@@ -1,97 +1,93 @@
-## Vorhersage von Festgeldakquisitionen
+## Term deposit prediction
 
-`main.py` - Datenimport und Aufruf der benötigten Funktionen für Training und Bewertung des Modells.  
-`src/eda.py` - Durchführung der explorativen Datenanalyse und Datenbereinigung.  
-`src/model.py` - Training verschiedener Modelle.  
-`src/evaluate.py` - Bewertung der verschiedenen Modelle und Thresholds.  
-`src/hpo.py` - Hyperparametertuning des besten Modells.
+`main.py` - Import of data and calling of needed functions for EDA, model selection and HPO of the best model.  
+`src/eda.py` - Executing exploratory data analysis and data cleanup.  
+`src/model.py` - Training of different models.  
+`src/evaluate.py` - Evaluation of a given model and of different thresholds.  
+`src/hpo.py` - Hyperparametertuning of the best model.
 
 ---
 
-### Erkenntnisse der explorativen Datenanalyse
+### EDA insights
 
-Die verwendeten Daten stammen aus einem Marketing-Datensatz einer portugiesischen Bank. [^1]
+The used data is part of a marketing dataset of a portuguese bank. [^1]
 
-#### Numerische Features
+#### Numerical Features
 
-Das Feature `balance` hat eine sehr breite Streuung und ist stark rechtsschief, hat jedoch vermutlich eine eher geringe Trennkraft. Das Feature
-`duration` dagegen weist eine bessere Trennkraft auf, allerdings ist die Dauer eines Anrufs erst nach dem Anruf bekannt, wenn auch schon das Ergebnis bekannt ist.
-Um das Modell realistisch zu halten wird das Feature vor dem Modelltraining entfernt. Dem bereinigten Feature `pdays` nach nehmen Kunden, deren letzter Marketingkontakt
-kürzer her sind, das Angebot öfter an. Allerdings bietet sich für das Feature (meines Wissenstands nach) keine sinnvolle Bereinigung durch die es möglich wäre das Feature mit in das
-Training aufzunehmen, weshalb auch dieses Feature entfernt wird.
+The feature `balance` shows a very wide distribution and is strongly right-skewed but likely has low predictive power. The feature `duration` exhibits better discrimination, 
+however, call duration is only known after the call, which would make its inclusion unrealistic. Therefore, duration is removed before training.
+The cleaned feature `pdays` indicates that customers contacted more recently tend to accept the offer more often. However, no practical preprocessing allows its meaningful 
+inclusion, so it is removed as well.
 
 <div style="display: flex; justify-content: center; align-items: center; gap: 20px">
     <img src="graphs/duration_feature.png" alt="Diagramm" style="width: 275px">
     <img src="graphs/pdays_feature.png" alt="Diagramm" style="width: 275px">
 </div>
 
-Die Features `age`, `day_of_week`, `campaign` und `previous` weisen grundsätzlich keine große Besonderheit auf.
+The features `age`, `day_of_week`, `campaign` and `previous` show no remarkable patterns.
 
-#### Kategorische Features
-Durch die Daten wird sichtbar, dass die Akquisitionsrate bei Kunden die Studenten oder im Ruhestand sind höher ist als bei anderen Kategorien des Features `job`. Außerdem 
-zeigt auch das Feature `month` deutliche Diskrepanzen in der Akquisitionsrate, wobei in den Monaten März, Oktober, September und Dezember der Anteil der Zusagen
-deutlich über dem der restlichen Monate liegt. Das Feature `poutcome` zeigt eine deutliche retention rate, bei der über 60% der Kunden, bei denen frühere Marketingkampagnen
-erfolgreich waren, erneut ein Festgeldangebot annehmen. 
+#### Categorical Features
+The dataset reveals that subscription rates are higher for customers who are students or retired than other categories of the `job` feature. The feature `month` also shows notable 
+discrepancies: in March, October, September, and December, the proportion of positive responses is significantly higher than in other months. The feature `poutcome` highlights retention, 
+as more than 60% of customers with previous successful campaigns accept the offer again.
 
 <div style="display: flex; justify-content: center; align-items: center; gap: 20px">
     <img src="graphs/month_feature.png" alt="Diagramm" style="width: 275px">
     <img src="graphs/poutcome_feature.png" alt="Diagramm" style="width: 275px">
 </div>
 
-Bei den übrigen kategorischen Features `marital`, `education`, `default`, `housing`, `loan` und `contact` zeigen sich keine so deutlichen Diskrepanzen zwischen den einzelnen Kategorien.
+The other categorical features `marital`, `education`, `default`, `housing`, `loan` and `contact` show no substantial differences between categories.
 
-Die Zielvariable ist sehr unbalanciert, da nur 11,69% der Fälle zu `yes` gehören, was zur Folge hat, dass die Accuracy verzerrt ist und PR-AUC aussagekräftiger ist, da explizit die Performance auf der
-positiven Klasse gemessen wird.
-
----
-
-### Zielmetrik
-
-Als Zielmetrik wird hauptsächlich die Precision verwendet, also $\frac{TP}{TP+FP}$. Grund dafür ist, dass in dem Fall der Vorhersage von Festgeldakquisitionen
-der Anteil von False Positives möglichst gering gehalten werden sollte, während der Anteil von False Negatives nicht ein so hohes Gewicht hat. Ist der Anteil
-von False Positives hoch, steigt der Anteil der Kosten die schlussendlich keinen Ertrag bringen. False Negative dagegen sind ausschließlich Opportunitätskosten.
-Außerdem werden ROC-AUC Score und PR-AUC Score bei der Modellauswahl verwendet, um die Modelle unabhängig vom Threshold zu vergleichen.
+The target variable is unbalanced as only 11.69% of cases have a `yes` result. The consequence is that the Accuracy is distorted and PR-AUC is more meaningful because the performance of the
+positive class is explicitly measured.
 
 ---
 
-### Modellauswahl
+### Target Metric
 
-Da es sich um ein Klassifikationsproblem handelt, werden als mögliche Modelle die logistische Regression, der Naive Bayes, k nearest neighbors, SVM, Random Forest und Gradient Boosting Classifier in die Auswahl mit aufgenommen.
-Unter den genannten Modellen erzielt GBC in der Baseline die besten Ergebnisse mit einem ROC-AUC Score von 0,8 und einem Precision Score von 0,66, weshalb das Modell für weitere Optimierung ausgewählt wurde.
+The primary target metric is Precision because false positives are costly in term deposit prediction, whereas false negatives represent only opportunity costs. High false positives 
+increase costs without generating revenue, while false negatives are less critical. Additionally, ROC-AUC and PR-AUC are used during model selection because they allow comparison of 
+models independent of any threshold.
 
-Die Hyperparameter wurden mithilfe eines GridSearchCV auf dem Training-Set optimiert, wobei strukturelle Hyperparameter auf einem groben Grid untersucht wurden, während die restlichen Parameter in einem weiteren Durchlauf weiter
-optimiert wurden:  
+---
 
-`learning rate`: 0,04  
-`max depth`: 4  
-`min sample split`: 2  
-`n estimators`: 350  
-`subsample`: 0,8
+### Model Selection
+
+Since this is a classification problem, the candidate models include Logistic Regression, Naive Bayes, k-Nearest Neighbors, SVM, Random Forest, and Gradient Boosting Classifier.
+Among these, GBC achieves the best baseline performance with a ROC-AUC of 0.80 and Precision of 0.66, making it the model selected for further optimization.
+Hyperparameters were tuned using GridSearchCV on the training set. Structural parameters (`max_depth`, `min_samples_split`) were explored on a coarse grid, while optimization-related 
+parameters (`learning_rate`, `n_estimators`, `subsample`) were fine-tuned in a second pass:
+
+`max_depth`: 4  
+`min_sample_split`: 2  
+`learning_rate`: 0.04  
+`n_estimators`: 350  
+`subsample`: 0.8
 
 ---
 
 ### Performance
 
-Die Performance des Modells ist von dem jeweils gewählten Threshold abhängig. Aufgrund der zuvor genannten Priorität der Zielmetrik ist der Optimalpunkt um einen Threshold von 0,6 herum.
+Model performance depends on the chosen decision threshold. Given the priority on Precision, the optimal threshold lies around 0.6.
 
-| Threshold |  0,5  |  0,6  |  0,7  |
+| Threshold |  0.5  |  0.6  |  0.7  |
 |-----------|:-----:|:-----:|:-----:|
-| Precision | 0,740 | 0,825 | 0,890 |
-| Recall    | 0,288 | 0,206 | 0,130 | 
+| Precision | 0.740 | 0.825 | 0.890 |
+| Recall    | 0.288 | 0.206 | 0.130 | 
 
-Je nachdem welche Priorität gewählt wird, und wie hoch die Kosten pro Anruf beziehungsweise der Ertrag pro erfolgreichen Anruf ist, sollte ein Threshold gewählt werden der die Opportunitätskosten von nicht getätigten Anrufen, und die Kosten von Anrufen ohne Erfolg minimiert. 
-Grundsätzlich kann man sagen, dass das Modell in der derzeitigen Form zur Unterstützung von Entscheidungen verwendet werden kann, aber ein geeigneter Threshold anhand realer Daten gewählt werden sollte.
+The threshold should be chosen considering the cost per call and revenue per successful subscription, balancing opportunity costs and wasted effort. The model in its current form is 
+suitable for decision support, but the threshold should ideally be adapted to real-world cost/revenue data.
 
 ---
 
-### Weiterführend
+### Further Work
 
-Weitere Features die zur Prognose sinnvoll sein könnten wäre etwa die Häufigkeit von Ein- und Auszahlungen. Ein Kunde dessen Kontostand volatil ist, wird vermutlich eher seltener ein Festgeldangebot annehmen.
-Für einen Kunden, der das Konto de facto bereits als Festgeldkonto nutzt, ist das Angebot dagegen attraktiver. Zusätzliche Variablen, die eine Rolle spielen, könnten wären etwa die aktuelle Wirtschaftslage oder auch
-der Konkurrenzmarkt. Ist die aktuelle Kombination aus angebotenem Zins und Inflation attraktiv, werden vermutlich mehr Kunden ein Festgeldangebot annehmen, bietet eine andere Bank einen attraktiveren Zinssatz, sinkt die Attraktivität
-von Festgeldkonten der eigenen Bank. Außerdem könnte wie im vorigen Abschnitt erwähnt die Kosten pro Anruf und der Gewinn pro Kunde mit einfließen, um den Threshold zu optimieren.
+Additional features could improve prediction, such as account deposit/withdrawal frequency. Customers with volatile balances may accept term deposit offers less frequently, while those 
+already using the account as a term deposit might be more likely to subscribe. Other potential variables include economic conditions or competitors’ interest rates: if the offered rate 
+is attractive relative to inflation or other banks, subscription rates may increase, otherwise, they may decrease. The cost per call and profit per customer could also be incorporated 
+into threshold selection.
 
-Unter Umständen kann das Modell auch für andere Bankprodukte verwendet werden. Dafür müsste die Zielvariable angepasst werden, und das Modell erneut trainiert werden, da Features in anderen Bereichen nicht unbedingt die gleiche Relevanz haben
-wie bei Festgeldakquisitionen. Voraussetzung dafür ist natürlich, dass die neue Zielvariable entweder für die gleichen Kunden erhoben wird, oder alle Features für neue Kunden erhoben werden. Die jetzige Zielvariable könnte dabei zu einem neuen Feature werden.
+The model could be adapted for other banking products by adjusting the target variable and retraining. Some features may lose relevance, and a requirement is that the new target variable is
+collected from the same customers or all features are selected for new customers. The previous target could even serve as a new feature.
 
 [^1]: Moro, S., Rita, P., & Cortez, P. (2014). Bank Marketing [Dataset]. UCI Machine Learning Repository. https://doi.org/10.24432/C5K306.
