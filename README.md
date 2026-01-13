@@ -53,7 +53,7 @@ Zusätzlich wird zur allgemeinen Bewertung des Modells die Accuracy herangezogen
 
 ### Performance
 
-Die Performance des Modells kann eher als mittelmäßig bis schlecht beschrieben werden. Der Precision Score liegt bei 66,31% was bedeutet, dass der Anteil der Kunden für den vorhergesagt wird, dass er das Angebot annimmt,
+Die Performance des Modells kann eher als mittelmäßig bis schlecht beschrieben werden. Der Precision Score liegt bei dem standardmäßigen Threshold von 0,5 bei 66,07% was bedeutet, dass der Anteil der Kunden für den vorhergesagt wird, dass er das Angebot annimmt,
 in nur knapp 66% der Fälle auch wirklich das Angebot annimmt. Die Accuracy dagegen liegt bei etwa 89%. Grund dafür ist die unausgeglichene Verteilung der Antworten, die `yes` Kategorie, bildet nur 11,69% der Fälle.
 Eine Möglichkeit das Modell zu verbessern wäre Hyperparameter-Tuning, und im Idealfall ein höherer Anteil an erfolgreichen Akquisitionen im Datensatz.
 Anhand der Tabelle ist auch erkennbar, dass viele eigentlich positiven Ergebnisse als negativ vorhergesagt werden. Das Modell sollte also zusätzlich so optimiert werden, dass die False Negatives sinken,
@@ -61,8 +61,13 @@ ohne dass dadurch die Anzahl an False Positives leidet.
 
 |                     | positives Ergebnis | negatives Ergebnis |  
 |---------------------|:------------------:|:------------------:|
-| positive Vorhersage |        187         |         95         |
-| negative Vorhersage |        871         |        7890        |
+| positive Vorhersage |        187         |         96         |
+| negative Vorhersage |        871         |        7889        |
+
+Verändert man den Threshold, so erhält man mit einem Threshold von 0,7 eine Precision von 73,11%, wobei der Recall dafür auf 8,22% sinkt. Um zu entscheiden welcher Threshold gewählt wird, muss eine Zielvariable definiert werden. Möchte man
+False Positives vermeiden, also Kosten durch nicht gewinnbringende Anrufe vermeiden, sollte ein Threshold von 0,7 gewählt werden. Möchte man dagegen den reinen Umsatz maximieren und so False Negatives vermeiden sollte ein eher niedrigerere Threshold
+gewählt werden. Um eine konkrete, begründete Entscheidung für den Threshold zu treffen, müssten die Kosten pro Anruf und der durchschnittliche Gewinn pro gewonnenem Kunden bekannt sein. Dann kann ein sinnvolles Verhältnis von False Positives und False Negatives
+bestimmt werden, um so den Threshold zu optimieren.
 
 Zusammenfassend kann man sagen, dass das Modell in der derzeitigen Form zur Unterstützung von Entscheidungen verwendet werden kann, aber nicht immer optimalen Ergebnisse liefert. Zuvor wäre noch Hyperparameter-Tuning sinnvoll, 
 und auch eine laufende Erweiterung des Datensatzes ist empfehlenswert.
@@ -74,7 +79,7 @@ und auch eine laufende Erweiterung des Datensatzes ist empfehlenswert.
 Weitere Features die zur Prognose sinnvoll sein könnten wäre etwa die Häufigkeit von Ein- und Auszahlungen. Ein Kunde dessen Kontostand volatil ist, wird vermutlich eher seltener ein Festgeldangebot annehmen.
 Für einen Kunden, der das Konto de facto bereits als Festgeldkonto nutzt, ist das Angebot dagegen attraktiver. Zusätzliche Variablen, die eine Rolle spielen, könnten wären etwa die aktuelle Wirtschaftslage oder auch
 der Konkurrenzmarkt. Ist die aktuelle Kombination aus angebotenem Zins und Inflation attraktiv, werden vermutlich mehr Kunden ein Festgeldangebot annehmen, bietet eine andere Bank einen attraktiveren Zinssatz, sinkt die Attraktivität
-von Festgeldkonten der eigenen Bank.
+von Festgeldkonten der eigenen Bank. Außerdem könnte wie im vorigen Abschnitt erwähnt die Kosten pro Anruf und der Gewinn pro Kunde mit einfließen, um den Threshold zu optimieren.
 
 Unter Umständen kann das Modell auch für andere Bankprodukte verwendet werden. Dafür müsste die Zielvariable angepasst werden, und das Modell erneut trainiert werden, da Features in anderen Bereichen nicht unbedingt die gleiche Relevanz haben
 wie bei Festgeldakquisitionen. Voraussetzung dafür ist natürlich, dass die neue Zielvariable entweder für die gleichen Kunden erhoben wird, oder alle Features für neue Kunden erhoben werden. Die jetzige Zielvariable könnte dabei zu einem neuen Feature werden.

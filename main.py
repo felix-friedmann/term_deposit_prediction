@@ -1,5 +1,6 @@
 from ucimlrepo import fetch_ucirepo
 from src.eda import run_eda
+from src.eda import preprocessing
 from src.model import train_model
 from src.evaluate import evaluate_model
 from sklearn.model_selection import train_test_split
@@ -21,18 +22,26 @@ def main():
     target = bank_marketing.data.targets
 
     # running exploratory data analysis (check distributions, missing values, etc.)
-    cleaned_features, cleaned_target = run_eda(features, target, False)
+    run_eda(features, target, False)
 
     # splitting the dataset in train and test, keeping the proportions of yes/no in target
     features_train, features_test, target_train, target_test = train_test_split(
-        cleaned_features, cleaned_target, test_size=0.2, random_state=42, stratify=cleaned_target
+        features, target, test_size=0.2, random_state=42, stratify=target
+    )
+
+    features_train_clean, target_train_clean, scaler, encoder = preprocessing(
+        features_train, target_train
+    )
+
+    features_test_clean, target_test_clean, _, _ = preprocessing(
+        features_test, target_test, scaler, encoder, fit=False
     )
 
     # training the chosen model (logistic regression) on the training data
-    model = train_model(features_train, target_train)
+    model = train_model(features_train_clean, target_train_clean)
 
     # evaluating the trained model on the test data with ...
-    evaluate_model(target_test, model.predict(features_test))
+    evaluate_model(features_test_clean, target_test_clean, model)
 
 if __name__ == '__main__':
     main()
