@@ -2,8 +2,9 @@
 
 `main.py` - Datenimport und Aufruf der benötigten Funktionen für Training und Bewertung des Modells.  
 `src/eda.py` - Durchführung der explorativen Datenanalyse und Datenbereinigung.  
-`src/model.py` - Training einer Logistic Regression auf dem Test-Split.  
-`src/evaluate.py` - Bewertung des trainierten Modells anhand von Precision und Accuracy.  
+`src/model.py` - Training verschiedener Modelle.  
+`src/evaluate.py` - Bewertung der verschiedenen Modelle und Thresholds.  
+`src/hpo.py` - Hyperparametertuning des besten Modells.
 
 ---
 
@@ -39,6 +40,9 @@ erfolgreich waren, erneut ein Festgeldangebot annehmen.
 
 Bei den übrigen kategorischen Features `marital`, `education`, `default`, `housing`, `loan` und `contact` zeigen sich keine so deutlichen Diskrepanzen zwischen den einzelnen Kategorien.
 
+Die Zielvariable ist sehr unbalanciert, da nur 11,69% der Fälle zu `yes` gehören, was zur Folge hat, dass die Accuracy verzerrt ist und PR-AUC aussagekräftiger ist, da explizit die Performance auf der
+positiven Klasse gemessen wird.
+
 ---
 
 ### Zielmetrik
@@ -46,31 +50,37 @@ Bei den übrigen kategorischen Features `marital`, `education`, `default`, `hous
 Als Zielmetrik wird hauptsächlich die Precision verwendet, also $\frac{TP}{TP+FP}$. Grund dafür ist, dass in dem Fall der Vorhersage von Festgeldakquisitionen
 der Anteil von False Positives möglichst gering gehalten werden sollte, während der Anteil von False Negatives nicht ein so hohes Gewicht hat. Ist der Anteil
 von False Positives hoch, steigt der Anteil der Kosten die schlussendlich keinen Ertrag bringen. False Negative dagegen sind ausschließlich Opportunitätskosten.
+Außerdem werden ROC-AUC Score und PR-AUC Score bei der Modellauswahl verwendet, um die Modelle unabhängig vom Threshold zu vergleichen.
 
-Zusätzlich wird zur allgemeinen Bewertung des Modells die Accuracy herangezogen, um generell darzustellen, welchen Anteil an Fällen das Modell korrekt erkennt.
+---
+
+### Modellauswahl
+
+Da es sich um ein Klassifikationsproblem handelt, werden als mögliche Modelle die logistische Regression, der Naive Bayes, k nearest neighbors, SVM, Random Forest und Gradient Boosting Classifier in die Auswahl mit aufgenommen.
+Unter den genannten Modellen erzielt GBC in der Baseline die besten Ergebnisse mit einem ROC-AUC Score von 0,8 und einem Precision Score von 0,66, weshalb das Modell für weitere Optimierung ausgewählt wurde.
+
+Die Hyperparameter wurden mithilfe eines GridSearchCV auf dem Training-Set optimiert, wobei strukturelle Hyperparameter auf einem groben Grid untersucht wurden, während die restlichen Parameter in einem weiteren Durchlauf weiter
+optimiert wurden:  
+
+`learning rate`: 0,04  
+`max depth`: 4  
+`min sample split`: 2  
+`n estimators`: 350  
+`subsample`: 0,8
 
 ---
 
 ### Performance
 
-Die Performance des Modells kann eher als mittelmäßig bis schlecht beschrieben werden. Der Precision Score liegt bei dem standardmäßigen Threshold von 0,5 bei 66,07% was bedeutet, dass der Anteil der Kunden für den vorhergesagt wird, dass er das Angebot annimmt,
-in nur knapp 66% der Fälle auch wirklich das Angebot annimmt. Die Accuracy dagegen liegt bei etwa 89%. Grund dafür ist die unausgeglichene Verteilung der Antworten, die `yes` Kategorie, bildet nur 11,69% der Fälle.
-Eine Möglichkeit das Modell zu verbessern wäre Hyperparameter-Tuning, und im Idealfall ein höherer Anteil an erfolgreichen Akquisitionen im Datensatz.
-Anhand der Tabelle ist auch erkennbar, dass viele eigentlich positiven Ergebnisse als negativ vorhergesagt werden. Das Modell sollte also zusätzlich so optimiert werden, dass die False Negatives sinken,
-ohne dass dadurch die Anzahl an False Positives leidet.
+Die Performance des Modells ist von dem jeweils gewählten Threshold abhängig. Aufgrund der zuvor genannten Priorität der Zielmetrik ist der Optimalpunkt um einen Threshold von 0,6 herum.
 
-|                     | positives Ergebnis | negatives Ergebnis |  
-|---------------------|:------------------:|:------------------:|
-| positive Vorhersage |        187         |         96         |
-| negative Vorhersage |        871         |        7889        |
+| Threshold |  0,5  |  0,6  |  0,7  |
+|-----------|:-----:|:-----:|:-----:|
+| Precision | 0,740 | 0,825 | 0,890 |
+| Recall    | 0,288 | 0,206 | 0,130 | 
 
-Verändert man den Threshold, so erhält man mit einem Threshold von 0,7 eine Precision von 73,11%, wobei der Recall dafür auf 8,22% sinkt. Um zu entscheiden welcher Threshold gewählt wird, muss eine Zielvariable definiert werden. Möchte man
-False Positives vermeiden, also Kosten durch nicht gewinnbringende Anrufe vermeiden, sollte ein Threshold von 0,7 gewählt werden. Möchte man dagegen den reinen Umsatz maximieren und so False Negatives vermeiden sollte ein eher niedrigerere Threshold
-gewählt werden. Um eine konkrete, begründete Entscheidung für den Threshold zu treffen, müssten die Kosten pro Anruf und der durchschnittliche Gewinn pro gewonnenem Kunden bekannt sein. Dann kann ein sinnvolles Verhältnis von False Positives und False Negatives
-bestimmt werden, um so den Threshold zu optimieren.
-
-Zusammenfassend kann man sagen, dass das Modell in der derzeitigen Form zur Unterstützung von Entscheidungen verwendet werden kann, aber nicht immer optimalen Ergebnisse liefert. Zuvor wäre noch Hyperparameter-Tuning sinnvoll, 
-und auch eine laufende Erweiterung des Datensatzes ist empfehlenswert.
+Je nachdem welche Priorität gewählt wird, und wie hoch die Kosten pro Anruf beziehungsweise der Ertrag pro erfolgreichen Anruf ist, sollte ein Threshold gewählt werden der die Opportunitätskosten von nicht getätigten Anrufen, und die Kosten von Anrufen ohne Erfolg minimiert. 
+Grundsätzlich kann man sagen, dass das Modell in der derzeitigen Form zur Unterstützung von Entscheidungen verwendet werden kann, aber ein geeigneter Threshold anhand realer Daten gewählt werden sollte.
 
 ---
 
