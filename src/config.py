@@ -4,13 +4,15 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 
+RANDOM_STATE = 42
+
 MODELS = {
-    'lr': LogisticRegression(random_state=42),
+    'lr': LogisticRegression(random_state=RANDOM_STATE),
     'nb': GaussianNB(),
     'knn': KNeighborsClassifier(),
-    'svm': SVC(random_state=42, probability=True),
-    'rfc': RandomForestClassifier(random_state=42),
-    'gbc': GradientBoostingClassifier(random_state=42)
+    'svm': SVC(random_state=RANDOM_STATE, probability=True),
+    'rfc': RandomForestClassifier(random_state=RANDOM_STATE),
+    'gbc': GradientBoostingClassifier(random_state=RANDOM_STATE)
 }
 
 HPO_PARAM_GRID = {

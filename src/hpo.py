@@ -1,5 +1,7 @@
 from sklearn.model_selection import GridSearchCV
 from src.config import MODELS, HPO_PARAM_GRID
+import pandas as pd
+import logging
 
 def hyperparameter_optimization(features, target, model_name):
     """
@@ -9,6 +11,8 @@ def hyperparameter_optimization(features, target, model_name):
     :param model_name: The model to optimize.
     :return: The optimized model.
     """
+
+    logger = logging.getLogger(__name__)
 
     grid_search = GridSearchCV(
         estimator=MODELS[model_name],
@@ -21,7 +25,7 @@ def hyperparameter_optimization(features, target, model_name):
 
     grid_search.fit(features, target)
 
-    print("Best params: ", grid_search.best_params_)
-    print("Best PR AUC: ", grid_search.best_score_)
+    logger.info(f"Best parameters: {grid_search.best_params_}")
+    logger.info(f"Best PR AUC: {grid_search.best_score_}")
 
     return grid_search.best_estimator_

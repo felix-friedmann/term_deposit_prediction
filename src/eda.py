@@ -65,7 +65,7 @@ def preprocessing(features, target, scaler=None, encoder=None, fit=True):
     """
 
     if not fit and (scaler is None or encoder is None):
-        raise ValueError("Scaler and encoder must be provided if fit is False.")
+       raise ValueError("Scaler and encoder must be provided if fit is False.")
 
     df_num = features.select_dtypes(include='int64')
     df_cat = features.select_dtypes(include='object')
