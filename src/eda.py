@@ -3,55 +3,53 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
 
-def run_eda(features, target, output):
+def run_eda(features, target):
     """
     Performing descriptive statistics to understand the underlying data, cleanup of non-used variables, converting of categorical features and scaling of numeric ones.
     :param features: Dataframe containing the features.
     :param target: Dataframe of the target data.
-    :param output: Controls if descriptive statistics should be printed or not.
     """
 
-    if output:
-        df_num = features.select_dtypes(include='int64')
-        df_cat = features.select_dtypes(include='object')
+    df_num = features.select_dtypes(include='int64')
+    df_cat = features.select_dtypes(include='object')
 
-        # general distribution of the target variable
-        print(f"Distribution of target variables: {target.value_counts(normalize=True)}")
+    # general distribution of the target variable
+    print(f"Distribution of target variables: {target.value_counts(normalize=True)}")
 
-        # descriptive statistics for the numeric features
-        for col in df_num:
-            yes_values = df_num[target['y'] == 'yes'][col]
-            no_values = df_num[target['y'] == 'no'][col]
+    # descriptive statistics for the numeric features
+    for col in df_num:
+        yes_values = df_num[target['y'] == 'yes'][col]
+        no_values = df_num[target['y'] == 'no'][col]
 
-            # cleaning up 'pdays' because the categorical value -1 disturbs the descriptive statistics
-            if col == 'pdays':
-                yes_values = yes_values.replace(-1, np.nan).dropna()
-                no_values = no_values.replace(-1, np.nan).dropna()
+        # cleaning up 'pdays' because the categorical value -1 disturbs the descriptive statistics
+        if col == 'pdays':
+            yes_values = yes_values.replace(-1, np.nan).dropna()
+            no_values = no_values.replace(-1, np.nan).dropna()
 
-            plt.boxplot([yes_values, no_values], labels=['yes', 'no'])
-            plt.title(col)
-            plt.show()
+        plt.boxplot([yes_values, no_values], labels=['yes', 'no'])
+        plt.title(col)
+        plt.show()
 
-            print(f"\nYes stats '{col}':")
-            print(yes_values.describe())
+        print(f"\nYes stats '{col}':")
+        print(yes_values.describe())
 
-            print(f"\nNo stats '{col}':")
-            print(no_values.describe())
+        print(f"\nNo stats '{col}':")
+        print(no_values.describe())
 
-        # descriptive statistics for the categorical features
-        for col in df_cat:
-            table = pd.crosstab(index=df_cat[col], columns=target['y'], margins=True, normalize='index')
-            table = table.drop("All", axis='index')
+    # descriptive statistics for the categorical features
+    for col in df_cat:
+        table = pd.crosstab(index=df_cat[col], columns=target['y'], margins=True, normalize='index')
+        table = table.drop("All", axis='index')
 
-            print(f"\nColumn: {col}")
-            print(table)
+        print(f"\nColumn: {col}")
+        print(table)
 
-            table.plot(kind='bar')
-            plt.title(col)
-            plt.ylabel("Proportion")
+        table.plot(kind='bar')
+        plt.title(col)
+        plt.ylabel("Proportion")
 
-            plt.tight_layout()
-            plt.show()
+        plt.tight_layout()
+        plt.show()
 
 
 def preprocessing(features, target, scaler=None, encoder=None, fit=True):

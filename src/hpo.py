@@ -1,36 +1,22 @@
-from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import GridSearchCV
+from src.config import MODELS, HPO_PARAM_GRID
 
-def hyperparameter_optimization(features, target, output=True):
+def hyperparameter_optimization(features, target, model_name):
     """
     Hyperparameter optimization.
     :param features: The features used for optimization.
     :param target: The target data used for optimization.
-    :param output: Print the optimization results or not.
+    :param model_name: The model to optimize.
     :return: The optimized model.
     """
 
-    if output: verbose = 2
-    else: verbose = 0
-
-    param_grid = {
-        'n_estimators': [250, 300, 350],
-        'learning_rate': [0.02, 0.04, 0.05, 0.06],
-        'subsample': [0.75, 0.8, 0.85],
-        # set depth and sample_split set after first run through
-        'max_depth': [4],
-        'min_samples_split': [2],
-    }
-
-    gbc = GradientBoostingClassifier(random_state=42)
-
     grid_search = GridSearchCV(
-        estimator=gbc,
-        param_grid=param_grid,
+        estimator=MODELS[model_name],
+        param_grid=HPO_PARAM_GRID[model_name],
         scoring='average_precision',
         cv=3,
         n_jobs=-1,
-        verbose=verbose
+        verbose=2
     )
 
     grid_search.fit(features, target)
