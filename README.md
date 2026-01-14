@@ -12,7 +12,7 @@ and threshold-based evaluation of performance.
 
 ### EDA Insights
 
-The used data is part of a marketing dataset of a Portuguese bank and automatically loaded. This repository provides no data. [^1]
+The used data is part of a marketing dataset of a Portuguese bank and automatically loaded. [^1] This repository itself provides no data.
 
 #### Numerical Features
 
@@ -147,7 +147,7 @@ python main.py --train --model svm
 ### Repository Overview
 
 `main.py` - Import of data and calling of needed functions for EDA, model selection and HPO of the best model.  
-`src/config.py` - Initializing the model dictionaries.
+`src/config.py` - Initializing the model dictionaries.  
 `src/eda.py` - Executing exploratory data analysis and data cleanup.  
 `src/evaluate.py` - Evaluation of a given model and of different thresholds.  
 `src/hpo.py` - Hyperparametertuning of the best model.  
