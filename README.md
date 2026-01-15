@@ -2,9 +2,6 @@
 ![Python](https://img.shields.io/badge/python-3.9+-blue.svg)
 
 # Term deposit prediction
-
----
-
 ## Project Overview & Analysis
 
 A machine learning project predicting customer subscription to term deposits, with EDA, model selection, hyperparameter optimization
